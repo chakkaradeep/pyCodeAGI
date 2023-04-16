@@ -38,18 +38,18 @@ class CreateCodingTasksChain(LLMChain):
         return cls(prompt=prompt, llm=llm, verbose=verbose)
 
 
-class RateCodeTasksChain(LLMChain):
+# class RateCodeTasksChain(LLMChain):
     """
     LLM Chain to rate the tasks to accomplish the objective.
     """
-    raise NotImplementedError("Rate Code Tasks Chain is not implemented yet.")
+    # raise NotImplementedError("Rate Code Tasks Chain is not implemented yet.")
 
 
-class RefineCodeTasksChain(LLMChain):
+# class RefineCodeTasksChain(LLMChain):
     """
     LLM Chain to refine the highest scored tasks to accomplish the objective.
     """
-    raise NotImplementedError("Refine Code Instructions Chain is not implemented yet.")
+    # raise NotImplementedError("Refine Code Instructions Chain is not implemented yet.")
 
 
 class GenerateCodeChain(LLMChain):
