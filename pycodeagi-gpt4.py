@@ -20,6 +20,9 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 os.environ["OPENAI_API_KEY"] = config.get('API_KEYS', 'OPENAI-API_KEY')
 
+output_file = "output_steps.txt"
+code_file = "app.py"
+
 
 class GeneratePyCodeChain(LLMChain):
     """
@@ -66,7 +69,6 @@ class PyCodeAGI(Chain, BaseModel):
         return []
 
     def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        output_file = "output_steps.txt"
         objective = inputs["objective"]
         print("\033[93m" + "\n" + "*****OBJECTIVE*****" + "\033[0m")
         print(objective.strip())
@@ -94,7 +96,7 @@ class PyCodeAGI(Chain, BaseModel):
             {description}
             """
         tasks = f"""
-            Create a detailed app architecture.\n
+            Create a concise app architecture you can use to build the UX flow.\n
             Outline the components and structure of the code.\n
             Present the app architecture in an ordered list.
             """
@@ -115,10 +117,10 @@ class PyCodeAGI(Chain, BaseModel):
                     {architecture}
                     """
         tasks = f"""
-                Outline the app UX flow.\n
+                Create a concise UX flow that you can use to build code flow.\n
                 Present the UX flow an ordered list.
                 """
-        self.llm_chain.llm.max_tokens = 500
+        self.llm_chain.llm.max_tokens = 700
         uxflow = self.llm_chain.run(instructions=instructions, tasks=tasks)
         print(uxflow.strip())
         with open(output_file, "a") as f:
@@ -137,11 +139,11 @@ class PyCodeAGI(Chain, BaseModel):
                         {uxflow}
                         """
         tasks = f"""
-            Create a detailed code flow.\n
+            Create a concise code flow you can use to write code.\n
             Outline the code components and structure.\n
             Present the code flow in an ordered list.
             """
-        self.llm_chain.llm.max_tokens = 500
+        self.llm_chain.llm.max_tokens = 700
         codeflow = self.llm_chain.run(instructions=instructions, tasks=tasks)
         print(codeflow.strip())
         with open(output_file, "a") as f:
@@ -162,7 +164,7 @@ class PyCodeAGI(Chain, BaseModel):
                         {codeflow}
                         """
         tasks = f"""
-            Write the Python code for the app.\n
+            Write the Python code for the app in a single python file.\n
             Avoid using database for backend storage, instead use in-memory options.\n
             Exclude environment setup, testing, debugging, and deployment tasks.
             """
@@ -177,7 +179,6 @@ class PyCodeAGI(Chain, BaseModel):
         code_content = code_match.group(1).strip()
         try:
             ast.parse(code_content)
-            code_file = "app.py"
             print("Generated code is AWESOME!")
             with open(code_file, "w") as f:
                 f.write(code_content)
@@ -198,8 +199,18 @@ class PyCodeAGI(Chain, BaseModel):
 
 
 if __name__ == "__main__":
-    objective = input(f"\nWhat app do you want me to build: ")
+    # Delete output files
+    if os.path.exists(output_file):
+        os.remove(output_file)
+
+    if os.path.exists(code_file):
+        os.remove(code_file)
+
     # Initialize our agent
     pycode_agi = PyCodeAGI.create_llm_chain()
+
+    # Get the user input
+    objective = input(f"\nWhat app do you want me to build: ")
+
     # Run the agent and witness the MAGIC!
     pycode_agi({"objective": objective})
